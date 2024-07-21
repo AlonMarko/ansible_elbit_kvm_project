@@ -1,0 +1,41 @@
+---
+- name: Deploy .deb package to Raspberry Pi devices
+  hosts: raspberrypi
+  become: true
+  vars_files:
+    - ../vars/package.yml
+  tasks:
+    - name: Ensure package name is provided
+      fail:
+        msg: "The variable 'package_name' is required"
+      when: package_name == ""
+
+    - name: Copy software package to Pi
+      copy:
+        src: "../debs/{{ package_name }}"
+        dest: /tmp/{{ package_name }}"
+      register: copy_result
+      ignore_errors: yes
+
+    - name: Check if package copy was successful
+      fail:
+        msg: "Failed to copy the package to the target device."
+      when: copy_result is failed
+
+    - name: Install software package
+      apt:
+        deb: /tmp/{{ package_name }}"
+        state: present
+      register: install_result
+      ignore_errors: yes
+
+    - name: Check if package installation was successful
+      fail:
+        msg: "Failed to install the package on the target device."
+      when: install_result is failed
+
+    - name: Clean up
+      file:
+        path: /tmp/{{ package_name }}"
+        state: absent
+      ignore_errors: yes
