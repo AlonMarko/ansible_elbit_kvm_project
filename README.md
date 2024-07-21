@@ -11,9 +11,12 @@ ansible/
 ├── inventory.ini             # Inventory file listing Raspberry Pi devices
 ├── update.yml                # Ansible playbook for updating software packages
 ├── debs/                     # Directory for storing .deb packages
-│   └── new_package.deb       # Example .deb package
+│   └── new_package.deb       # Example .deb package that can be deployed via deploy.sh
 └── scripts/
-    └── setup-ansible.sh      # Script to set up Ansible and run the playbook
+    └── setup-ansible.sh      # Script to set up Ansible.
+    └── deploy.sh             # Script to run the Playbook.
+└── vars/
+    └──packge.yml             # Store the packge name when deploying.
 ```
 
 ## Getting Started
@@ -28,8 +31,8 @@ ansible/
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/yourusername/ansible-configurations.git
-   cd ansible-configurations
+   git clone https://github.com/yourusername/ansible-elbit_kvm_project.git
+   cd nsible-elbit_kvm_project
    ```
 
 2. **Prepare the Setup Script:**
@@ -60,34 +63,24 @@ Modify the `inventory.ini` file to include the IP addresses and SSH details of y
 
 ```ini
 [raspberrypi]
-pi1 ansible_host=192.168.1.101 ansible_user=pi ansible_ssh_private_key_file=~/.ssh/id_rsa
-pi2 ansible_host=192.168.1.102 ansible_user=pi ansible_ssh_private_key_file=~/.ssh/id_rsa
+pi1 ansible_host=192.168.1.101 ansible_user=elbit ansible_ssh_private_key_file=~/.ssh/id_rsa
+pi2 ansible_host=192.168.1.102 ansible_user=elbit ansible_ssh_private_key_file=~/.ssh/id_rsa
 # Add entries for all other Raspberry Pi devices
 ```
 
-### Running the Playbook
+### Run the Deployment Script
 
-Use the following command to run the playbook and deploy the package:
+
+Navigate to the scripts/ directory and run the deployment script with the package name
 
 ```bash
-ansible-playbook -i inventory.ini update.yml -e "package_name=new_package.deb"
+cd ansible-deployment/scripts
+./deploy.sh your_package.deb
 ```
+This script will update the package_name in the vars/package.yml file and run the Ansible playbook to deploy the package to all Raspberry Pi devices listed in inventory.ini.
 
 ## Notes
 
 - Ensure SSH keys are set up for passwordless access to all Raspberry Pi devices listed in `inventory.ini`.
 - The specified user in the inventory file (`ansible_user`) should have sudo privileges.
 
-## Examples
-
-### Example 1: Set static IP to 10.0.0.105 on a 10.0.0.x network.
-
-```bash
-./scripts/setup-ansible.sh --router 10.0.0.1 --ip 10.0.0.105
-```
-
-### Example 2: Configure wlan0 with a static IP of 192.168.1.100, with a Quad9 DNS server and a local fallback DNS server.
-
-```bash
-./scripts/setup-ansible.sh --router 192.168.1.1 --ip 192.168.1.100 --dns 9.9.9.9 --dns 192.168.1.1 --interface wlan0
-```
