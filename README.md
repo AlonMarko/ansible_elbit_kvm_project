@@ -91,7 +91,3 @@ ansible-playbook -i inventory.ini update.yml -e "package_name=new_package.deb"
 ```bash
 ./scripts/setup-ansible.sh --router 192.168.1.1 --ip 192.168.1.100 --dns 9.9.9.9 --dns 192.168.1.1 --interface wlan0
 ```
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
