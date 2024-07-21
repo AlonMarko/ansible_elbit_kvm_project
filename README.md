@@ -9,7 +9,6 @@ This repository contains Ansible configurations and scripts for deploying and ma
 ansible_elbit_kvm_project/
 ├── ansible.cfg               # Ansible configuration file
 ├── inventory.ini             # Inventory file listing Raspberry Pi devices
-├── update.yml                # Ansible playbook for updating software packages
 ├── debs/                     # Directory for storing .deb packages
 │   └── new_package.deb       # Example .deb package that can be deployed via deploy.sh
 └── scripts/
