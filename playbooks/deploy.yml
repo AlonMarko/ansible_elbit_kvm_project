@@ -12,8 +12,8 @@
 
     - name: Copy software package to Pi
       copy:
-        src: "../debs/{{ package_name }}"
-        dest: /tmp/{{ package_name }}"
+        src: ../debs/{{ package_name }}
+        dest: /tmp/{{ package_name }}
       register: copy_result
       ignore_errors: yes
 
@@ -24,7 +24,7 @@
 
     - name: Install software package
       apt:
-        deb: /tmp/{{ package_name }}"
+        deb: /tmp/{{ package_name }}
         state: present
       register: install_result
       ignore_errors: yes
@@ -36,6 +36,6 @@
 
     - name: Clean up
       file:
-        path: /tmp/{{ package_name }}"
+        path: /tmp/{{ package_name }}
         state: absent
       ignore_errors: yes

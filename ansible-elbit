@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Ensure package name is provided
+if [ -z "$1" ]; then
+  echo "Usage: ansible-elbit <package_name.deb>"
+  exit 1
+fi
+
+PACKAGE_PATH=$(realpath "$1")
+PACKAGE_NAME=$(basename "$PACKAGE_PATH")
+echo "Package name: $PACKAGE_NAME"
+
+
+# Define the installation directory
+INSTALL_DIR="/usr/local/ansible-deployment"
+
+# Navigate to the Ansible deployment directory
+cd "$INSTALL_DIR" || { echo "Failed to change directory to $INSTALL_DIR"; exit 1; }
+
+# Update the package name in the vars file
+echo "package_name: $PACKAGE_NAME" | sudo tee vars/package.yml > /dev/null
+
+# Run the playbook
+ansible-playbook -i inventory.ini playbooks/deploy.yml 
+
+# Cleanup the temporary working directory
+rm -rf "$WORKDIR"
