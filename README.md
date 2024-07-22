@@ -7,15 +7,18 @@ This repository contains Ansible configurations and scripts for deploying and ma
 
 ```
 ansible_elbit_kvm_project/
-├── ansible.cfg               # Ansible configuration file
-├── inventory.ini             # Inventory file listing Raspberry Pi devices
-├── debs/                     # Directory for storing .deb packages
-│   └── new_package.deb       # Example .deb package that can be deployed via deploy.sh
-└── scripts/
-    └── setup-ansible.sh      # Script to set up Ansible.
-    └── deploy.sh             # Script to run the Playbook.
-└── vars/
-    └──packge.yml             # Store the packge name when deploying.
+├── ansible.cfg
+├── inventory.ini
+├── playbooks/
+│ └── deploy.yml
+├── debs/
+├── vars/
+│ └── package.yml
+├── scripts/
+│ ├── setup-ansible.sh
+│ ├── deploy.sh
+│ └── install-ansible-elbit.sh
+└── ansible-elbit
 ```
 
 ## Getting Started
@@ -31,20 +34,10 @@ ansible_elbit_kvm_project/
 
    ```bash
    git clone https://github.com/yourusername/ansible-elbit_kvm_project.git
-   cd nsible-elbit_kvm_project
+   cd ansible-elbit_kvm_project
    ```
 
-2. **Prepare the Setup Script:**
-
-   Ensure the setup script is executable:
-
-   ```bash
-   chmod +x scripts/setup-ansible.sh
-   ```
-
-3. **Run the Setup Script:**
-
-   Execute the script to install Ansible, set up configurations, and deploy the playbook:
+2. **Run the Setup Script:**
 
    ```bash
    ./scripts/setup-ansible.sh
@@ -55,6 +48,7 @@ ansible_elbit_kvm_project/
 ### Adding .deb Packages
 
 Place any new `.deb` packages you wish to deploy in the `debs/` directory.
+Altough it is not mandatory. it is for good practice.
 
 ### Updating the Inventory
 
@@ -70,14 +64,16 @@ pi2 ansible_host=192.168.1.102 ansible_user=elbit ansible_ssh_private_key_file=~
 ### Run the Deployment Script
 
 
-Navigate to the scripts/ directory and run the deployment script with the package name
+Deploy a .deb Package:
 
 ```bash
-cd ansible-deployment/scripts
-./deploy.sh your_package.deb
+ansible-elbit /path/to/your_package.deb
 ```
-This script will update the package_name in the vars/package.yml file and run the Ansible playbook to deploy the package to all Raspberry Pi devices listed in inventory.ini.
+## Scripts
 
+- setup-ansible.sh: Sets up the Ansible environment and installs the ansible-elbit command.
+- deploy.sh: Handles the deployment of the .deb package.
+- install-ansible-elbit.sh: Installs the ansible-elbit command in /usr/local/bin.
 ## Notes
 
 - Ensure SSH keys are set up for passwordless access to all Raspberry Pi devices listed in `inventory.ini`.
