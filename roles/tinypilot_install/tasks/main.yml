@@ -1,0 +1,20 @@
+---
+- name: Copy Debian package to remote host
+  copy:
+    src: "{{ package_path }}"
+    dest: /tmp/{{ package_name }}
+
+- name: Install Debian package
+  apt:
+    deb: /tmp/{{ package_name }}
+    state: present
+
+- name: Create configuration file for the install script
+  template:
+    src: install_config.sh.j2
+    dest: /opt/Elbit_TinyPilot_install/install_config.sh
+  vars:
+    install_serial_udp: "{{ install_serial_udp | default(0) }}"
+
+- name: Run post-install script
+  command: /opt/Elbit_TinyPilot_install/<name_of_main_install_script> "{{ install_serial_udp }}"

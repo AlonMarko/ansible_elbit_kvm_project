@@ -5,6 +5,9 @@
   vars_files:
     - ../vars/package.yml
   tasks:
+    - include_role:
+        name: tinypilot_install
+      when: "'tinypilot' in ansible_run_tags"
     - name: Ensure package name is provided
       fail:
         msg: "The variable 'package_name' is required"

@@ -1,27 +1,53 @@
 #!/bin/bash
 
-# Ensure package name is provided
-if [ -z "$1" ]; then
-  echo "Usage: ansible-elbit <package_name.deb>"
+# Function to show usage
+show_usage() {
+  echo "Usage: ansible-elbit [--fresh] <package_path>"
+  echo "--fresh the above is for installing the complete TinyPilot package including uStreamer, Janus, and all dependencies. Aimed for fresh RPi deployment."
+  echo "ansible-elbit <package_path>"
+  echo "The above is for installing normal deb packages like a TinyPilot version for already installed RPi and serial packages, etc."
   exit 1
+}
+
+
+# Check if no arguments are provided
+if [ $# -lt 1 ]; then
+  show_usage
+fi
+
+TINY_PILOT_MODE=0
+
+if [ "$1" == "--fresh" ]; then
+  TINY_PILOT_MODE=1
+  shift
 fi
 
 PACKAGE_PATH=$(realpath "$1")
 PACKAGE_NAME=$(basename "$PACKAGE_PATH")
-echo "Package name: $PACKAGE_NAME"
-
+PACKAGE_VERSION=$(echo "$PACKAGE_NAME" | sed -E 's/Elbit_TinyPilot_(.+)\.deb/\1/')
 
 # Define the installation directory
 INSTALL_DIR="/usr/local/ansible-deployment"
+
+# Create the debs directory if it doesn't exist
+sudo mkdir -p "$INSTALL_DIR/debs"
+
+# Copy the package to the debs directory
+sudo cp "$PACKAGE_PATH" "$INSTALL_DIR/debs/$PACKAGE_NAME"
 
 # Navigate to the Ansible deployment directory
 cd "$INSTALL_DIR" || { echo "Failed to change directory to $INSTALL_DIR"; exit 1; }
 
 # Update the package name in the vars file
 echo "package_name: $PACKAGE_NAME" | sudo tee vars/package.yml > /dev/null
+echo "package_version: $PACKAGE_VERSION" | sudo tee -a vars/package.yml > /dev/null
+echo "package_path: $PACKAGE_PATH" | sudo tee -a vars/package.yml > /dev/null
 
-# Run the playbook
-ansible-playbook -i inventory.ini playbooks/deploy.yml 
+if [ $TINY_PILOT_MODE -eq 1 ]; then
+  ansible-playbook -i inventory.ini playbooks/deploy.yml --tags tinypilot
+else
+  ansible-playbook -i inventory.ini playbooks/deploy.yml
+fi
 
 # Cleanup the temporary working directory
 rm -rf "$WORKDIR"

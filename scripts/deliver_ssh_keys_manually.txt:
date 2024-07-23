@@ -1,0 +1,38 @@
+# Delivering SSH Keys Manually
+
+## Prerequisites
+1. Ensure you have SSH access to the Raspberry Pi devices.
+2. Have your SSH public key ready (e.g., id_ed25519.pub or id_rsa.pub).
+
+## Steps
+
+### 1. Locate Your SSH Public Key
+The default location is:
+- id_ed25519.pub or id_rsa.pub
+~/.ssh/id_ed25519.pub
+~/.ssh/id_rsa.pub
+
+
+### 2. Copy the SSH Key to the Raspberry Pi
+Use the `ssh-copy-id` command to copy your SSH key to each Raspberry Pi device.
+
+#### Command Syntax
+```sh
+ssh-copy-id -i <path_to_your_public_key> <username>@<raspberry_pi_ip>
+
+3. Example Commands
+For Raspberry Pi 1:
+
+ssh-copy-id -i ~/.ssh/id_ed25519.pub elbit@192.168.0.100
+
+4. Verify SSH Access
+After copying the SSH key, verify that you can SSH into each Raspberry Pi without a password.
+ssh <username>@<raspberry_pi_ip>
+
+Troubleshooting
+If you are prompted for a password, ensure that the SSH key was copied correctly.
+Check the permissions of the ~/.ssh directory and the authorized_keys file on the Raspberry Pi.
+
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+
