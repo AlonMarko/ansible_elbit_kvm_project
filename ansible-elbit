@@ -2,27 +2,44 @@
 
 # Function to show usage
 show_usage() {
-  echo "Usage: ansible-elbit [--fresh] <package_path>"
-  echo "--fresh the above is for installing the complete TinyPilot package including uStreamer, Janus, and all dependencies. Aimed for fresh RPi deployment."
-  echo "ansible-elbit <package_path>"
-  echo "The above is for installing normal deb packages like a TinyPilot version for already installed RPi and serial packages, etc."
+  echo "Usage: ansible-elbit [--fresh | --edit] <package_path>"
+  echo "--fresh: For installing the complete TinyPilot package including uStreamer, Janus, and all dependencies. Aimed for fresh RPi deployment."
+  echo "--edit: Open the inventory.ini file for editing."
+  echo "<package_path>: Path to the .deb package."
   exit 1
 }
-
 
 # Check if no arguments are provided
 if [ $# -lt 1 ]; then
   show_usage
 fi
 
-TINY_PILOT_MODE=0
+FRESH_INSTALL_MODE=0
+EDIT_INVENTORY=0
+PACKAGE_PATH=""
 
-if [ "$1" == "--fresh" ]; then
-  TINY_PILOT_MODE=1
+# Parse arguments
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    --fresh) FRESH_INSTALL_MODE=1 ;;
+    --edit) EDIT_INVENTORY=1 ;;
+    *) PACKAGE_PATH=$(realpath "$1") ;;
+  esac
   shift
+done
+
+# Edit inventory.ini if --edit flag is provided
+if [ $EDIT_INVENTORY -eq 1 ]; then
+  sudo nano /usr/local/ansible-deployment/inventory.ini
+  exit 0
 fi
 
-PACKAGE_PATH=$(realpath "$1")
+# Check if PACKAGE_PATH is set
+if [ -z "$PACKAGE_PATH" ]; then
+  echo "Error: Package path is required."
+  show_usage
+fi
+
 PACKAGE_NAME=$(basename "$PACKAGE_PATH")
 PACKAGE_VERSION=$(echo "$PACKAGE_NAME" | sed -E 's/Elbit_TinyPilot_(.+)\.deb/\1/')
 
@@ -40,11 +57,10 @@ cd "$INSTALL_DIR" || { echo "Failed to change directory to $INSTALL_DIR"; exit 1
 
 # Update the package name in the vars file
 echo "package_name: $PACKAGE_NAME" | sudo tee vars/package.yml > /dev/null
-echo "package_version: $PACKAGE_VERSION" | sudo tee -a vars/package.yml > /dev/null
 echo "package_path: $PACKAGE_PATH" | sudo tee -a vars/package.yml > /dev/null
 
-if [ $TINY_PILOT_MODE -eq 1 ]; then
-  ansible-playbook -i inventory.ini playbooks/deploy.yml --tags tinypilot
+if [ $FRESH_INSTALL_MODE -eq 1 ]; then
+  ansible-playbook -i inventory.ini playbooks/deploy.yml --tags never -vvv
 else
   ansible-playbook -i inventory.ini playbooks/deploy.yml
 fi

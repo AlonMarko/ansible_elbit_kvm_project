@@ -4,10 +4,8 @@
   become: true
   vars_files:
     - ../vars/package.yml
+
   tasks:
-    - include_role:
-        name: tinypilot_install
-      when: "'tinypilot' in ansible_run_tags"
     - name: Ensure package name is provided
       fail:
         msg: "The variable 'package_name' is required"
@@ -18,7 +16,6 @@
         src: ../debs/{{ package_name }}
         dest: /tmp/{{ package_name }}
       register: copy_result
-      ignore_errors: yes
 
     - name: Check if package copy was successful
       fail:
@@ -30,8 +27,7 @@
         deb: /tmp/{{ package_name }}
         state: present
       register: install_result
-      ignore_errors: yes
-
+  
     - name: Check if package installation was successful
       fail:
         msg: "Failed to install the package on the target device."
@@ -41,4 +37,77 @@
       file:
         path: /tmp/{{ package_name }}
         state: absent
-      ignore_errors: yes
+
+################################ DIVIDER ##########################################
+
+    - name: Ensure package name is provided
+      fail:
+        msg: "The variable 'package_name' is required"
+      when: package_name == ""
+      tags:
+      - never
+
+    - name: Copy software package to Pi
+      copy:
+        src: ../debs/{{ package_name }}
+        dest: /tmp/{{ package_name }}
+      register: copy_result
+      tags:
+      - never
+    
+    - name: Check if package copy was successful
+      fail:
+        msg: "Failed to copy the package to the target device."
+      when: copy_result is failed
+      tags:
+       - never
+
+
+    - name: Create installation directory
+      file:
+        path: /opt/Elbit_TinyPilot_install
+        state: directory
+        mode: '0755'
+      tags:
+        - never
+
+    - name: Create configuration file for the install script
+      template:
+        src: install_config.sh.j2
+        dest: /opt/Elbit_TinyPilot_install/install_config.sh
+      vars:
+        install_serial_udp: "{{ hostvars[inventory_hostname]['install_serial_udp'] | default(0) }}"
+      tags:
+        - never
+
+    
+    - name: Ensure install_config.sh is executable
+      file:
+        path: /opt/Elbit_TinyPilot_install/install_config.sh
+        mode: '0755'
+      tags:
+        - never
+
+
+    - name: Install software package
+      apt:
+        deb: /tmp/{{ package_name }}
+        state: present
+      register: install_result
+      tags:
+      - never
+
+    - name: Check if package installation was successful
+      fail:
+        msg: "Failed to install the package on the target device."
+      when: install_result is failed
+      tags:
+      - never
+
+    - name: Clean up
+      file:
+        path: /tmp/{{ package_name }}
+        state: absent
+      tags:
+      - never
+
